@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><title>AI Digital Insurance</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f3f6fb;color:#1a2433}
+header{background:#1d4ed8;color:#fff;padding:18px 24px}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;padding:24px;max-width:1100px;margin:auto}
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px #0001}
+label{display:block;font-size:13px;margin-top:10px}
+input,select{width:100%;padding:8px;margin-top:3px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box}
+button{margin-top:14px;padding:9px 16px;background:#1d4ed8;color:#fff;border:0;border-radius:6px;cursor:pointer}
+.out{margin-top:14px;font-weight:600}#log{height:200px;overflow:auto;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:14px}
+</style></head><body>
+<header><h2>AI-Driven Digital Insurance Services</h2></header>
+<main>
+<section class="card"><h3>Smart Premium Quote</h3>
+<label>Age<input id="age" type="number" value="35"></label>
+<label>BMI<input id="bmi" type="number" value="24"></label>
+<label>Smoker<select id="smoker"><option value="0">No</option><option value="1">Yes</option></select></label>
+<label>Dependents<input id="dep" type="number" value="1"></label>
+<label>Coverage<select id="cov"><option>200000</option><option selected>500000</option><option>1000000</option></select></label>
+<button onclick="premium()">Get Quote</button><div class="out" id="p"></div></section>
+
+<section class="card"><h3>Claim Fraud Check</h3>
+<label>Claim amount<input id="amt" type="number" value="300000"></label>
+<label>Policy age (days)<input id="pa" type="number" value="30"></label>
+<label>Prior claims<input id="pc" type="number" value="2"></label>
+<label>Days to report<input id="rd" type="number" value="40"></label>
+<button onclick="fraud()">Analyse Claim</button><div class="out" id="f"></div></section>
+
+<section class="card"><h3>Support Chatbot</h3><div id="log"></div>
+<input id="msg" placeholder="Ask about claims, renewal..." onkeydown="if(event.key==='Enter')chat()">
+<button onclick="chat()">Send</button></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const post=(u,b)=>fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json());
+async function premium(){const r=await post('/api/premium',{age:$('age').value,bmi:$('bmi').value,smoker:$('smoker').value,dependents:$('dep').value,coverage:$('cov').value});
+ $('p').textContent='Estimated annual premium: ₹'+r.premium.toLocaleString('en-IN');}
+async function fraud(){const r=await post('/api/fraud',{claim_amount:$('amt').value,policy_age:$('pa').value,prior_claims:$('pc').value,report_delay:$('rd').value});
+ $('f').textContent='Fraud probability '+(r.fraud_probability*100).toFixed(1)+'% → '+r.decision;}
+async function chat(){const m=$('msg').value.trim();if(!m)return;$('log').innerHTML+='<p><b>You:</b> '+m.replace(/</g,'&lt;')+'</p>';$('msg').value='';
+ const r=await post('/api/chat',{message:m});$('log').innerHTML+='<p><b>Bot:</b> '+r.reply+'</p>';$('log').scrollTop=1e6;}
+</script></body></html>
